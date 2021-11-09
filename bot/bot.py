@@ -36,7 +36,7 @@ subreddit = reddit.subreddit(reddit_subreddit)
 
 
 
-apppath='./data/'
+apppath='data/'
 
 
 if not os.path.isfile(apppath+DB_FILE):
