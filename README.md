@@ -14,6 +14,8 @@ services:
       REDDIT_SECRET: YOURSECRET
       # you can monitor multiple subreddits using subreddit1+subreddit2+subreddit3
       REDDIT_SUBREDDIT: SubReddit
+
+      DB_FILE: database.db
     volumes:
       - ./data:/data
     restart: always
