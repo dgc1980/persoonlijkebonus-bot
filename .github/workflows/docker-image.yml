@@ -15,4 +15,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag persoonlijkebonus-bot:$(date +%s)
+      run: docker build . --file Dockerfile --tag ghcr.io/dgc1980/persoonlijkebonus-bot:latest --tag ghcr.io/dgc1980/persoonlijkebonus-bot:$(date +%s)
+      run: docker push ghcr.io/dgc1980/persoonlijkebonus-bot:latest
+      run: docker push ghcr.io/dgc1980/persoonlijkebonus-bot:$(date +%s)
