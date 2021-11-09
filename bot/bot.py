@@ -137,11 +137,11 @@ def run_schedule():
         expiremode=0
         new_flair = "";
         if "VANAF MAANDAG / KOOPZEGELS UIT" in old_flair.upper():
-          new_flair = "9cce08ea-3080-11ea-bfee-0e3b5579f8e9"
-          flair_template = "efabb9c6-b690-11eb-93a2-0e8ba0a235d9"
+          new_flair = "KORTING LOOPT / KOOPZEGELS UIT"
+          flair_template = "9cce08ea-3080-11ea-bfee-0e3b5579f8e9"
         if "VANAF MAANDAG / KOOPZEGELS AAN" in old_flair.upper():
-          new_flair = "9003ce54-d261-11eb-b693-0e8f051ebff1"
-          flair_template = "c0a2c902-d261-11eb-b5d5-0e7ad168c343"
+          new_flair = "KORTING LOOPT / KOOPZEGELS AAN"
+          flair_template = "9003ce54-d261-11eb-b693-0e8f051ebff1"
 
         if "KORTING LOOPT / KOOPZEGELS UIT" in old_flair.upper():
           new_flair = "VERLOPEN"
