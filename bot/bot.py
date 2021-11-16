@@ -133,9 +133,13 @@ def run_schedule():
         except:
             pass
 
-        #try:
+        if old_flair == "":
+            return
+        if old_flair == "Mededeling" or old_flair == "Vraag":
+
+
         expiremode=0
-        new_flair = "";
+        new_flair = ""
         if "VANAF MAANDAG / KOOPZEGELS UIT" in old_flair.upper():
           new_flair = "KORTING LOOPT / KOOPZEGELS UIT"
           flair_template = "9cce08ea-3080-11ea-bfee-0e3b5579f8e9"
@@ -152,7 +156,7 @@ def run_schedule():
           flair_template = "90cf8a28-3080-11ea-bdb1-0e7131329107"
           expiremode=1
 
-        if old_flair != "":
+        if old_flair != "" and new_flair != "":
             submission.mod.flair(    flair_template_id=flair_template  , text=new_flair    )
 
       cursorObj.execute('DELETE FROM schedules WHERE postid = "'+ row[1]+'"')
