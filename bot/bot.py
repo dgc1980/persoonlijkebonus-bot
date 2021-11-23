@@ -13,6 +13,9 @@ import datetime
 import schedule
 import dateparser
 
+os.environ['TZ'] = 'UTC'
+
+
 reddit_cid = os.environ['REDDIT_CID']
 reddit_secret = os.environ['REDDIT_SECRET']
 
@@ -37,20 +40,22 @@ subreddit = reddit.subreddit(reddit_subreddit)
 
 
 apppath='/data/'
+#apppath='./'
 
 
-if not os.path.isfile(apppath+DB_FILE):
-    con = sqlite3.connect(apppath+DB_FILE)
-    cursorObj = con.cursor()
-    cursorObj.execute("CREATE TABLE IF NOT EXISTS schedules(id integer PRIMARY KEY, postid text, schedtime integer)")
-    con.commit()
-
+con = sqlite3.connect(apppath+DB_FILE)
+cursorObj = con.cursor()
+cursorObj.execute("CREATE TABLE IF NOT EXISTS schedules(id integer PRIMARY KEY, postid text, schedtime integer)")
+cursorObj.execute("CREATE TABLE IF NOT EXISTS weeklyposts(id integer PRIMARY KEY, username text, postcount integer, currentweek integer)")
+con.commit()
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%m-%d %H:%M',
                     filename=apppath+'affiliatebot.log',
                     filemode='a')
+
+
 
 console = logging.StreamHandler()
 console.setLevel(logging.INFO)
@@ -92,6 +97,45 @@ def check_post(post):
                pass
        else:
            if not donotprocess:
+
+### Weekly Post Limit
+               if 1 > 0:
+                  #wikistring = reddit.subreddit('machinatestsub').wiki['bonusbot-goodusers'].content_md
+                  wikistring = reddit.subreddit('persoonlijkebonus').wiki['bonusbot-goodusers'].content_md
+                  goodsubmittors = wikistring.split("\n")
+
+                  goodsubmittor = 0
+                  submittorname = post.author.name
+                  for submittor in goodsubmittors:
+                      if submittor.lower() == submittorname.lower():
+                          goodsubmittor = 1
+
+                  if goodsubmittor == 0:
+                      curcount = 0
+                      currentweek = time.strftime('%Y%W')
+                      con = sqlite3.connect(apppath+DB_FILE, timeout=20)
+                      cursorObj = con.cursor()
+                      cursorObj.execute('SELECT * FROM weeklyposts WHERE username = "'+submittorname+'" AND currentweek = '+currentweek)
+                      rows = cursorObj.fetchall()
+                      if len(rows) == 0:
+                        cursorObj.execute('INSERT INTO weeklyposts(username, postcount, currentweek) VALUES("'+submittorname+'",1,'+currentweek+')')
+                        con.commit()
+                      else:
+                        curcount = rows[0][2]
+                      if int(curcount) > 1:
+                          weekly=True
+                          logging.info(submittorname+' is over their weekly post limit')
+                          post.mod.remove()
+                          comment = post.reply("Beste profiteur, zo te zien post je deze week voor de tweede keer! In verband met misbruik moet deze post handmatig worden goedgekeurd. Dit gebeurt meestal dezelfde dag nog. Excuses voor het ongemak!")
+                          comment.mod.distinguish(sticky=True)
+                          comment.report("filtered submission due to weekly limit")
+                      else:
+                          curcount=curcount+1
+                          cursorObj.execute("UPDATE weeklyposts SET postcount = " + str(curcount) + ' WHERE id = ' + str(rows[0][0]))
+                          con.commit()
+                      con.close()
+###
+
                tm = dateparser.parse( "monday 3am GMT", settings={'PREFER_DATES_FROM': 'future', 'TIMEZONE': 'UTC', 'TO_TIMEZONE': 'UTC'} )
                tm2 = time.mktime( tm.timetuple() )
 
@@ -136,7 +180,7 @@ def run_schedule():
         if old_flair == "":
             return
         if old_flair == "Mededeling" or old_flair == "Vraag":
-
+          return
 
         expiremode=0
         new_flair = ""
@@ -157,6 +201,7 @@ def run_schedule():
           expiremode=1
 
         if old_flair != "" and new_flair != "":
+            logging.info("Changing flair for https://redd.it/" + submission.id)
             submission.mod.flair(    flair_template_id=flair_template  , text=new_flair    )
 
       cursorObj.execute('DELETE FROM schedules WHERE postid = "'+ row[1]+'"')
